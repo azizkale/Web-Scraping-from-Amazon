@@ -3,7 +3,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const User = require("./src/models/User");
+const wordsRouter = require("./src/Routes/word");
 
 const PORT = process.env.PORT || 4001;
 
@@ -18,10 +18,7 @@ mongoose
     app.use(cors());
     app.use(morgan("dev"));
 
-    app.get("/", async (req, res) => {
-      const users = await User.find();
-      res.send(users);
-    });
+    app.use("/word", wordsRouter);
 
-    app.listen(PORT, () => console.log(`server runs on ${PORT}`));
+    app.listen(PORT, () => console.log(`server runs on port ${PORT}`));
   });
