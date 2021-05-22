@@ -6,12 +6,12 @@ const cheerio = require("cheerio");
 products.route("/").get((req, res, next) => {
   axios
     .get(
-      "https://en.m.wikipedia.org/wiki/List_of_presidents_of_the_United_States"
+      "https://www.amazon.com.tr/b/ref=sv_ap_gender_4_6_1_1?node=13546667031"
     )
     .then((response) => {
       const $ = cheerio.load(response.data);
 
-      console.log($("#section_0").text());
+      console.log($(".octopus-best-seller-card > div > span").text());
     })
     .catch((error) => {
       console.error(error);
