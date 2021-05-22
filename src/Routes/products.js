@@ -1,19 +1,20 @@
 const express = require("express");
 const products = express.Router();
-const rp = require("request-promise");
-const $ = require("cheerio");
-const url =
-  "https://en.wikipedia.org/wiki/List_of_Presidents_of_the_United_States";
+const axios = require("axios");
+const cheerio = require("cheerio");
 
 products.route("/").get((req, res, next) => {
-  rp(url)
-    .then(function (html) {
-      //success!
+  axios
+    .get(
+      "https://en.m.wikipedia.org/wiki/List_of_presidents_of_the_United_States"
+    )
+    .then((response) => {
+      const $ = cheerio.load(response.data);
 
-      res.end(html);
+      console.log($("#section_0").text());
     })
-    .catch(function (err) {
-      //handle error
+    .catch((error) => {
+      console.error(error);
     });
 });
 
