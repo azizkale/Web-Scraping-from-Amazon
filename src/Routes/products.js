@@ -16,30 +16,31 @@ products.route("/").get((req, res, next) => {
     .then((response) => {
       const $ = cheerio.load(response.data);
       //gets links of products
-
-      $("span.rush-component > a").map((index, prd) => {
-        // gets products details page
-
-        oneProduct.pLink = "https://www.amazon.com.tr" + $(prd).attr("href");
+      $("span.rush-component > a").map(async (index, prd) => {
+        // creates links array
         linkList.push($(prd).attr("href"));
       });
+
+      // gets product details
+      for (let i = 0; i < linkList.length; i++) {
+        axios
+          .get("https://www.amazon.com.tr" + linkList[i])
+          .then((response2) => {
+            const $ = cheerio.load(response2.data);
+
+            oneProduct.pLink = "https://www.amazon.com.tr" + linkList[i];
+            oneProduct.pTitle = $("#productTitle").text().trim();
+            oneProduct.pStar = $("i > span").text().split(",")[0];
+            console.log(oneProduct);
+          })
+          .catch((error) => {
+            // console.error(error);
+          });
+      }
     })
     .catch((error) => {
       // console.error(error);
     });
-
-  linkList.map((link, index) => {
-    // axios
-    //   .get("https://www.amazon.com.tr" + link)
-    //   .then((response) => {
-    //     const $ = cheerio.load(response.data);
-    //     oneProduct.pTitle = $("#productTitle").text().trim();
-    //     console.log(oneProduct);
-    //   })
-    //   .catch((error) => {
-    //     // console.error(error);
-    //   });
-  });
 });
 
 module.exports = products;
