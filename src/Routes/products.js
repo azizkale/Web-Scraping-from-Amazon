@@ -4,7 +4,8 @@ const Product = require("../models/Product");
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-let pList = new Product();
+let oneProduct = new Product();
+let linkList = [];
 
 products.route("/").get((req, res, next) => {
   //gets products page
@@ -15,31 +16,30 @@ products.route("/").get((req, res, next) => {
     .then((response) => {
       const $ = cheerio.load(response.data);
       //gets links of products
-      $(".sg-col-inner").map((index, prd) => {
+
+      $("span.rush-component > a").map((index, prd) => {
         // gets products details page
 
-        let oneProduct = new Product();
-
-        oneProduct.pLink =
-          "https://www.amazon.com.tr" + $(prd).find($("a")).attr("href");
-
-        axios
-          .get(`https://www.amazon.com.tr${$(prd).find($("a")).attr("href")}`)
-          .then((response2) => {
-            const $ = cheerio.load(response2.data);
-
-            oneProduct.pTitle = $("#productTitle").text().trim();
-            oneProduct.pStar = $("i > span").text().split(",")[0];
-            console.log(oneProduct);
-          })
-          .catch((error2) => {
-            // console.log(error2);
-          });
+        oneProduct.pLink = "https://www.amazon.com.tr" + $(prd).attr("href");
+        linkList.push($(prd).attr("href"));
       });
     })
     .catch((error) => {
       // console.error(error);
     });
+
+  linkList.map((link, index) => {
+    // axios
+    //   .get("https://www.amazon.com.tr" + link)
+    //   .then((response) => {
+    //     const $ = cheerio.load(response.data);
+    //     oneProduct.pTitle = $("#productTitle").text().trim();
+    //     console.log(oneProduct);
+    //   })
+    //   .catch((error) => {
+    //     // console.error(error);
+    //   });
+  });
 });
 
 module.exports = products;
