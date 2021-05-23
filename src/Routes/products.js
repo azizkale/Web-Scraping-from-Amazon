@@ -31,6 +31,8 @@ products.route("/").get((req, res, next) => {
             oneProduct.pLink = "https://www.amazon.com.tr" + linkList[i];
             oneProduct.pTitle = $("#productTitle").text().trim();
             oneProduct.pStar = $("i > span").text().split(",")[0];
+            oneProduct.pPrice = $("#priceblock_ourprice").text();
+            oneProduct.pAvailability = $("#availability > span").text().trim();
             console.log(oneProduct);
           })
           .catch((error) => {
