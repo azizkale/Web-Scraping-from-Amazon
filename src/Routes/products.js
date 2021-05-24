@@ -33,10 +33,16 @@ products.route("/").get((req, res, next) => {
             oneProduct.pPrice = $("#priceblock_ourprice").text();
             oneProduct.pAvailability = $("#availability > span").text().trim();
             oneProduct.pCompanyName = $("a#bylineInfo").text();
-            oneProduct.pColor = $("#twister > #variation_color_name")
-              .find($("span.selection"))
-              .text()
-              .trim();
+
+            let arr = [];
+            $("#twister")
+              .find($("#variation_color_name > ul > li"))
+              .map(function (i, el) {
+                // this === el
+                return arr.push($(this).find($("img")).attr("alt"));
+              });
+            oneProduct.pColor = arr;
+
             oneProduct.pSize = $("#twister > #variation_size_name")
               .find($("span.selection"))
               .text()
