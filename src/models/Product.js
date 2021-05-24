@@ -1,10 +1,12 @@
 class Product {
-  constructor(pLink, pTitle, pStar, pPrice, pAvailability) {
-    this.pLink = pLink;
-    this.pTitle = pTitle;
-    this.pStar = pStar;
-    this.pPrice = pPrice;
-    this.pAvailability = pAvailability;
+  constructor(plink, ptitle, pstar, pprice, pavailability, color, size) {
+    this.pLink = plink;
+    this.pTitle = ptitle;
+    this.pStar = pstar;
+    this.pPrice = pprice;
+    this.pAvailability = pavailability;
+    this.pColor = color;
+    this.pSize = size;
   }
 }
 

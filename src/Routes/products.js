@@ -33,6 +33,14 @@ products.route("/").get((req, res, next) => {
             oneProduct.pStar = $("i > span").text().split(",")[0];
             oneProduct.pPrice = $("#priceblock_ourprice").text();
             oneProduct.pAvailability = $("#availability > span").text().trim();
+            oneProduct.pColor = $("#twister > #variation_color_name")
+              .find($("span.selection"))
+              .text()
+              .trim();
+            oneProduct.pSize = $("#twister > #variation_size_name")
+              .find($("span.selection"))
+              .text()
+              .trim();
             console.log(oneProduct);
           })
           .catch((error) => {
