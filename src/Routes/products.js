@@ -13,20 +13,19 @@ products.route("/").get((req, res, next) => {
     .get(
       "https://www.amazon.com.tr/s?bbn=12466209031&rh=n%3A12466208031%2Cn%3A13546647031&dc&qid=1621681498&rnid=12466209031&ref=lp_12466209031_nr_n_2"
     )
-    .then((response) => {
-      const $ = cheerio.load(response.data);
+    .then(async (response) => {
+      const $ = await cheerio.load(response.data);
       //gets links of products
       $("span.rush-component > a").map(async (index, prd) => {
         // creates links array
         linkList.push($(prd).attr("href"));
       });
-
       // gets product details
       for (let i = 0; i < linkList.length; i++) {
         axios
           .get("https://www.amazon.com.tr" + linkList[i])
-          .then((response2) => {
-            const $ = cheerio.load(response2.data);
+          .then(async (response2) => {
+            const $ = await cheerio.load(response2.data);
 
             oneProduct.pLink = "https://www.amazon.com.tr" + linkList[i];
             oneProduct.pTitle = $("#productTitle").text().trim();
@@ -41,6 +40,9 @@ products.route("/").get((req, res, next) => {
                 // this === el
                 return arr.push($(this).find($("img")).attr("alt"));
               });
+            arr.push(
+              $("#variation_color_name").find($("span.selection")).text().trim()
+            );
             oneProduct.pColor = arr;
 
             oneProduct.pSize = $("#twister > #variation_size_name")
@@ -50,7 +52,7 @@ products.route("/").get((req, res, next) => {
             console.log(oneProduct);
           })
           .catch((error) => {
-            // console.error(error);
+            console.error("error");
           });
       }
     })
