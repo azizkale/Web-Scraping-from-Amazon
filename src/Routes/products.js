@@ -30,9 +30,9 @@ products.route("/").get((req, res, next) => {
 
             oneProduct.pLink = "https://www.amazon.com.tr" + linkList[i];
             oneProduct.pTitle = $("#productTitle").text().trim();
-            oneProduct.pStar = $("i > span").text().split(",")[0];
             oneProduct.pPrice = $("#priceblock_ourprice").text();
             oneProduct.pAvailability = $("#availability > span").text().trim();
+            oneProduct.pCompanyName = $("a#bylineInfo").text();
             oneProduct.pColor = $("#twister > #variation_color_name")
               .find($("span.selection"))
               .text()
