@@ -4,7 +4,6 @@ const Product = require("../models/Product");
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-let oneProduct = new Product();
 let linkList = [];
 let errorLinkList = [];
 let listProduct = [];
@@ -32,6 +31,7 @@ products.route("/").get((req, res, next) => {
       for (let i = 0; i < errorLinkList.length; i++) {
         await getDetails(errorLinkList[i]);
       }
+      console.log(listProduct);
     })
     .catch((error) => {
       // console.error(error);
@@ -42,6 +42,8 @@ products.route("/").get((req, res, next) => {
 
 // 1-) gets the details of products
 async function getDetails(link) {
+  let oneProduct = new Product();
+
   await axios
     .get("https://www.amazon.com.tr" + link)
     .then(async (response2) => {
@@ -71,7 +73,15 @@ async function getDetails(link) {
         .trim();
 
       console.log(oneProduct);
-      listProduct.push(oneProduct);
+      listProduct.push({
+        pLink: oneProduct.pLink,
+        pTitle: oneProduct.pTitle,
+        pPrice: oneProduct.pPrice,
+        pAvailability: oneProduct.pAvailability,
+        pCompanyName: oneProduct.pCompanyName,
+        pColor: oneProduct.pColor,
+        pSize: "3 Yaş",
+      });
       console.log("error links sayısı: " + errorLinkList.length);
       console.log("ürünler: " + listProduct.length);
 
