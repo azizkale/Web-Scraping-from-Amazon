@@ -28,6 +28,9 @@ products.route("/").get((req, res, next) => {
 
       await console.log("telefafi döngüsü başlangış");
 
+      await tryAgainToGetDetails(errorLinkList, 1000);
+      await tryAgainToGetDetails(errorLinkList, 2000);
+
       await console.log("telefafi döngüsü bitiş");
 
       await console.log(errorLinkList.length);
@@ -84,13 +87,13 @@ async function getDetails(link) {
 
 // 2-) try to gets the details of products that can not be responded
 
-async function tryAgainToGetDetails(errorlinksarray) {
+async function tryAgainToGetDetails(errorlinksarray, time) {
   for (let i = 0; i < errorlinksarray.length; i++) {
     await (function (i) {
       setTimeout(function () {
         getDetails[errorlinksarray[i]];
         errorlinksarray.splice(i, 1);
-      }, i * 1000);
+      }, i * time);
     })(i);
   }
 }
