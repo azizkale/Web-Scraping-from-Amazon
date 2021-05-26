@@ -7,6 +7,7 @@ const cheerio = require("cheerio");
 let oneProduct = new Product();
 let linkList = [];
 let errorLinkList = [];
+let listProduct = [];
 
 products.route("/").get((req, res, next) => {
   //gets products page
@@ -25,15 +26,12 @@ products.route("/").get((req, res, next) => {
       for (let i = 0; i < linkList.length; i++) {
         await getDetails(linkList[i]);
       }
+      await console.log("telafi başlıyor");
 
-      await console.log("telefafi döngüsü başlangış");
-
-      await tryAgainToGetDetails(errorLinkList, 1000);
-      await tryAgainToGetDetails(errorLinkList, 2000);
-
-      await console.log("telefafi döngüsü bitiş");
-
-      await console.log(errorLinkList.length);
+      // gets product details
+      for (let i = 0; i < errorLinkList.length; i++) {
+        await getDetails(errorLinkList[i]);
+      }
     })
     .catch((error) => {
       // console.error(error);
@@ -73,7 +71,9 @@ async function getDetails(link) {
         .trim();
 
       console.log(oneProduct);
+      listProduct.push(oneProduct);
       console.log("error links sayısı: " + errorLinkList.length);
+      console.log("ürünler: " + listProduct.length);
 
       // console.log(linkList.length);
       return oneProduct;
