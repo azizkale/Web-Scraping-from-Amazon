@@ -6,6 +6,7 @@ const cheerio = require("cheerio");
 
 let oneProduct = new Product();
 let linkList = [];
+let errorLinkList = [];
 
 products.route("/").get((req, res, next) => {
   //gets products page
@@ -13,8 +14,8 @@ products.route("/").get((req, res, next) => {
     .get(
       "https://www.amazon.com.tr/s?bbn=12466209031&rh=n%3A12466208031%2Cn%3A13546647031&dc&qid=1621681498&rnid=12466209031&ref=lp_12466209031_nr_n_2"
     )
-    .then(async (response) => {
-      const $ = await cheerio.load(response.data);
+    .then((response) => {
+      const $ = cheerio.load(response.data);
       //gets links of products
       $("span.rush-component > a").map(async (index, prd) => {
         // creates links array
@@ -25,7 +26,7 @@ products.route("/").get((req, res, next) => {
         (function (index) {
           setTimeout(function () {
             getDetails(linkList[i]);
-          }, i * 4000);
+          }, i * 1000);
         })(i);
       }
     })
@@ -34,6 +35,7 @@ products.route("/").get((req, res, next) => {
     });
 });
 
+//functions
 function getDetails(link) {
   axios
     .get("https://www.amazon.com.tr" + link)
@@ -65,7 +67,8 @@ function getDetails(link) {
       console.log(oneProduct);
     })
     .catch((error) => {
-      console.error("error");
+      errorLinkList.push(link);
+      // console.error(error);
     });
 }
 
