@@ -14,7 +14,7 @@ products.route("/").get((req, res, next) => {
     .get(
       "https://www.amazon.com.tr/s?bbn=12466209031&rh=n%3A12466208031%2Cn%3A13546647031&dc&qid=1621681498&rnid=12466209031&ref=lp_12466209031_nr_n_2"
     )
-    .then((response) => {
+    .then(async (response) => {
       const $ = cheerio.load(response.data);
       //gets links of products
       $("span.rush-component > a").map(async (index, prd) => {
@@ -23,21 +23,25 @@ products.route("/").get((req, res, next) => {
       });
       // gets product details
       for (let i = 0; i < linkList.length; i++) {
-        (function (index) {
-          setTimeout(function () {
-            getDetails(linkList[i]);
-          }, i * 1000);
-        })(i);
+        await getDetails(linkList[i]);
       }
+
+      await console.log("telefafi döngüsü başlangış");
+
+      await console.log("telefafi döngüsü bitiş");
+
+      await console.log(errorLinkList.length);
     })
     .catch((error) => {
       // console.error(error);
     });
 });
 
-//functions
-function getDetails(link) {
-  axios
+//functions=========
+
+// 1-) gets the details of products
+async function getDetails(link) {
+  await axios
     .get("https://www.amazon.com.tr" + link)
     .then(async (response2) => {
       const $ = await cheerio.load(response2.data);
@@ -64,12 +68,31 @@ function getDetails(link) {
         .find($("span.selection"))
         .text()
         .trim();
+
       console.log(oneProduct);
+      console.log("error links sayısı: " + errorLinkList.length);
+
+      // console.log(linkList.length);
+      return oneProduct;
     })
     .catch((error) => {
+      // gets the links that can not be responded
       errorLinkList.push(link);
       // console.error(error);
     });
+}
+
+// 2-) try to gets the details of products that can not be responded
+
+async function tryAgainToGetDetails(errorlinksarray) {
+  for (let i = 0; i < errorlinksarray.length; i++) {
+    await (function (i) {
+      setTimeout(function () {
+        getDetails[errorlinksarray[i]];
+        errorlinksarray.splice(i, 1);
+      }, i * 1000);
+    })(i);
+  }
 }
 
 module.exports = products;
