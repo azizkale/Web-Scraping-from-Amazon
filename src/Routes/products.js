@@ -4,27 +4,25 @@ const Product = require("../models/Product");
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-let listLinks = [];
+let listProductPages = []; // gets all pages links which have product details
+let listLinksofAllProducts = [];
 let errorLinkList = [];
 let listProduct = [];
 
-products.route("/").get((req, res, next) => {
-  //gets products page
-  axios
-    .get(
-      "https://www.amazon.com.tr/s?rh=n%3A21440429031&fs=true&ref=lp_21440429031_sar"
-    )
+products.route("/").get(async (req, res, next) => {
+  let url =
+    "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622114472&rnid=13547133031&ref=sr_nr_n_4";
+
+  //gets products list pages
+  await axios
+    .get(url)
     .then(async (response) => {
       const $ = cheerio.load(response.data);
 
-      await getAllProductLinks(listLinks, $);
+      listProductPages.push(url); // first page
 
-      // await console.log(getAllProductLinks);
-      //gets links of products
-      // $("span.rush-component > a").map(async (index, prd) => {
-      //   // creates links array
-      //   linkList.push($(prd).attr("href"));
-      // });
+      await getAllProductPages(listProductPages, $);
+
       // // gets product details
       // for (let i = 0; i < linkList.length; i++) {
       //   await getDetails(linkList[i]);
@@ -40,6 +38,12 @@ products.route("/").get((req, res, next) => {
     .catch((error) => {
       // console.error(error);
     });
+
+  // gets all detail pages of products
+  await getAllDetailPageLinksOfProducts(
+    listProductPages,
+    listLinksofAllProducts
+  );
 });
 
 //functions=========
@@ -100,7 +104,7 @@ async function getDetails(link) {
 }
 
 // 2-) try to gets the details of products that can not be responded
-const getAllProductLinks = async (listpagelinks, $) => {
+const getAllProductPages = async (listpages, $) => {
   //
   // gets total number of the products on category pages
   const liCountOnPaginationSection = $("ul.a-pagination > li").length;
@@ -119,7 +123,7 @@ const getAllProductLinks = async (listpagelinks, $) => {
     .find("ul > li.a-last > a")
     .attr("href");
 
-  await listpagelinks.push(nextPageLink);
+  await listpages.push("https://www.amazon.com.tr" + nextPageLink);
 
   // gets all next pages links except first page (3. and another pages)
   for (let j = 0; j < totalPageCount; j++) {
@@ -135,22 +139,32 @@ const getAllProductLinks = async (listpagelinks, $) => {
           .attr("href");
       })
       .catch((error) => {});
-    await listpagelinks.push(nextPageLink);
+    await listpages.push("https://www.amazon.com.tr" + nextPageLink);
   }
 
-  return listpagelinks;
+  return listpages;
 };
 
-//////////////////////
-async function tryAgainToGetDetails(errorlinksarray, time) {
-  for (let i = 0; i < errorlinksarray.length; i++) {
-    await (function (i) {
-      setTimeout(function () {
-        getDetails[errorlinksarray[i]];
-        errorlinksarray.splice(i, 1);
-      }, i * time);
-    })(i);
-  }
-}
+// gets all detail pages of products from product pages
+const getAllDetailPageLinksOfProducts = async (pageslist, linkslist) => {
+  linkslist = [];
+  pageslist.map(async (pageurl) => {
+    await axios
+      .get(pageurl)
+      .then(async (resp) => {
+        const $ = await cheerio.load(resp.data);
+        // gets links of products on the first page
+        await $("span.rush-component > a").map(async (index, prd) => {
+          // creates links array
+          await linkslist.push(
+            "https://www.amazon.com.tr" + $(prd).attr("href")
+          );
+        });
+        await console.log(linkslist);
+      })
+      .catch((error) => {});
+  });
+  return linkslist;
+};
 
 module.exports = products;
