@@ -12,15 +12,14 @@ products.route("/").get((req, res, next) => {
   //gets products page
   axios
     .get(
-      "https://www.amazon.com.tr/s?rh=n%3A13028014031&fs=true&ref=lp_13028014031_sar"
+      "https://www.amazon.com.tr/s?rh=n%3A21440429031&fs=true&ref=lp_21440429031_sar"
     )
     .then(async (response) => {
       const $ = cheerio.load(response.data);
 
       await getAllProductLinks(listLinks, $);
 
-      await console.log("array:");
-      await console.log(listLinks);
+      // await console.log(getAllProductLinks);
       //gets links of products
       // $("span.rush-component > a").map(async (index, prd) => {
       //   // creates links array
@@ -101,15 +100,19 @@ async function getDetails(link) {
 }
 
 // 2-) try to gets the details of products that can not be responded
-async function getAllProductLinks(listpagelinks, $) {
+const getAllProductLinks = async (listpagelinks, $) => {
+  //
   // gets total number of the products on category pages
+  const liCountOnPaginationSection = $("ul.a-pagination > li").length;
+
   let totalPageCount = $(
     ".celwidget, .slot=MAIN, .template=PAGINATION, .widgetId=pagination-button"
   )
-    .find($("ul > li")[5])
+    .find($("ul > li")[liCountOnPaginationSection - 2])
     .text();
 
-  // gets the next page link on first page
+  console.log("sayfa sayısı: " + totalPageCount);
+  // gets the next page link on first page (2.page)
   let nextPageLink = $(
     ".celwidget, .slot=MAIN, .template=PAGINATION, .widgetId=pagination-button"
   )
@@ -118,8 +121,8 @@ async function getAllProductLinks(listpagelinks, $) {
 
   await listpagelinks.push(nextPageLink);
 
-  // gets all next pages links except first page
-  for (let j = 1; j < totalPageCount; j++) {
+  // gets all next pages links except first page (3. and another pages)
+  for (let j = 0; j < totalPageCount; j++) {
     await axios
       .get("https://www.amazon.com.tr" + nextPageLink)
       .then(async (resp) => {
@@ -130,13 +133,13 @@ async function getAllProductLinks(listpagelinks, $) {
         )
           .find("ul > li.a-last > a")
           .attr("href");
-      });
+      })
+      .catch((error) => {});
     await listpagelinks.push(nextPageLink);
-    await console.log(nextPageLink);
   }
 
   return listpagelinks;
-}
+};
 
 //////////////////////
 async function tryAgainToGetDetails(errorlinksarray, time) {
