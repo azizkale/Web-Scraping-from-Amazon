@@ -4,7 +4,7 @@ const Product = require("../models/Product");
 const axios = require("axios");
 const cheerio = require("cheerio");
 
-let linkList = [];
+let listLinks = [];
 let errorLinkList = [];
 let listProduct = [];
 
@@ -12,26 +12,31 @@ products.route("/").get((req, res, next) => {
   //gets products page
   axios
     .get(
-      "https://www.amazon.com.tr/s?bbn=12466209031&rh=n%3A12466208031%2Cn%3A13546647031&dc&qid=1621681498&rnid=12466209031&ref=lp_12466209031_nr_n_2"
+      "https://www.amazon.com.tr/s?rh=n%3A13028014031&fs=true&ref=lp_13028014031_sar"
     )
     .then(async (response) => {
       const $ = cheerio.load(response.data);
-      //gets links of products
-      $("span.rush-component > a").map(async (index, prd) => {
-        // creates links array
-        linkList.push($(prd).attr("href"));
-      });
-      // gets product details
-      for (let i = 0; i < linkList.length; i++) {
-        await getDetails(linkList[i]);
-      }
-      await console.log("telafi başlıyor");
 
-      // gets product details
-      for (let i = 0; i < errorLinkList.length; i++) {
-        await getDetails(errorLinkList[i]);
-      }
-      console.log(listProduct);
+      await getAllProductLinks(listLinks, $);
+
+      await console.log("array:");
+      await console.log(listLinks);
+      //gets links of products
+      // $("span.rush-component > a").map(async (index, prd) => {
+      //   // creates links array
+      //   linkList.push($(prd).attr("href"));
+      // });
+      // // gets product details
+      // for (let i = 0; i < linkList.length; i++) {
+      //   await getDetails(linkList[i]);
+      // }
+      // await console.log("telafi başlıyor");
+
+      // // gets product details
+      // for (let i = 0; i < errorLinkList.length; i++) {
+      //   await getDetails(errorLinkList[i]);
+      // }
+      // console.log(listProduct);
     })
     .catch((error) => {
       // console.error(error);
@@ -96,7 +101,44 @@ async function getDetails(link) {
 }
 
 // 2-) try to gets the details of products that can not be responded
+async function getAllProductLinks(listpagelinks, $) {
+  // gets total number of the products on category pages
+  let totalPageCount = $(
+    ".celwidget, .slot=MAIN, .template=PAGINATION, .widgetId=pagination-button"
+  )
+    .find($("ul > li")[5])
+    .text();
 
+  // gets the next page link on first page
+  let nextPageLink = $(
+    ".celwidget, .slot=MAIN, .template=PAGINATION, .widgetId=pagination-button"
+  )
+    .find("ul > li.a-last > a")
+    .attr("href");
+
+  await listpagelinks.push(nextPageLink);
+
+  // gets all next pages links except first page
+  for (let j = 1; j < totalPageCount; j++) {
+    await axios
+      .get("https://www.amazon.com.tr" + nextPageLink)
+      .then(async (resp) => {
+        const $ = await cheerio.load(resp.data);
+
+        nextPageLink = await $(
+          ".celwidget, .slot=MAIN, .template=PAGINATION, .widgetId=pagination-button"
+        )
+          .find("ul > li.a-last > a")
+          .attr("href");
+      });
+    await listpagelinks.push(nextPageLink);
+    await console.log(nextPageLink);
+  }
+
+  return listpagelinks;
+}
+
+//////////////////////
 async function tryAgainToGetDetails(errorlinksarray, time) {
   for (let i = 0; i < errorlinksarray.length; i++) {
     await (function (i) {
