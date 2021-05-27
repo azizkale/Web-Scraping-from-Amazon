@@ -11,7 +11,7 @@ let listProduct = [];
 
 products.route("/").get(async (req, res, next) => {
   let url =
-    "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622114472&rnid=13547133031&ref=sr_nr_n_4";
+    "https://www.amazon.com.tr/s?i=fashion&bbn=13546861031&rh=n%3A12466553031%2Cn%3A13546649031%2Cn%3A13546677031%2Cn%3A13546861031%2Cn%3A13547375031&dc&fs=true&qid=1622128867&rnid=13546861031&ref=sr_nr_n_4";
 
   //gets products list pages
   await axios
@@ -148,9 +148,10 @@ const getAllProductPages = async (listpages, $) => {
 // gets all detail pages of products from product pages
 const getAllDetailPageLinksOfProducts = async (pageslist, linkslist) => {
   linkslist = [];
-  pageslist.map(async (pageurl) => {
+
+  for (let i = 0; i < pageslist.length; i++) {
     await axios
-      .get(pageurl)
+      .get(pageslist[i])
       .then(async (resp) => {
         const $ = await cheerio.load(resp.data);
         // gets links of products on the first page
@@ -160,10 +161,11 @@ const getAllDetailPageLinksOfProducts = async (pageslist, linkslist) => {
             "https://www.amazon.com.tr" + $(prd).attr("href")
           );
         });
-        await console.log(linkslist);
       })
       .catch((error) => {});
-  });
+  }
+  await console.log(linkslist);
+  await console.log(linkslist.length);
   return linkslist;
 };
 
