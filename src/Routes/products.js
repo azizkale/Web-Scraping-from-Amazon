@@ -53,11 +53,11 @@ async function getDetails(link) {
   let oneProduct = new Product();
 
   await axios
-    .get("https://www.amazon.com.tr" + link)
+    .get(link)
     .then(async (response2) => {
       const $ = await cheerio.load(response2.data);
 
-      oneProduct.pLink = "https://www.amazon.com.tr" + link;
+      oneProduct.pLink = link;
       oneProduct.pTitle = $("#productTitle").text().trim();
       oneProduct.pPrice = $("#priceblock_ourprice").text();
       oneProduct.pAvailability = $("#availability > span").text().trim();
@@ -98,12 +98,12 @@ async function getDetails(link) {
     })
     .catch((error) => {
       // gets the links that can not be responded
-      errorLinkList.push(link);
+      // errorLinkList.push(link);
       // console.error(error);
     });
 }
 
-// 2-) try to gets the details of products that can not be responded
+// gets all products-details pages links
 const getAllProductPages = async (listpages, $) => {
   //
   // gets total number of the products on category pages
@@ -161,12 +161,16 @@ const getAllDetailPageLinksOfProducts = async (pageslist, linkslist) => {
             "https://www.amazon.com.tr" + $(prd).attr("href")
           );
         });
+        return linkslist;
       })
       .catch((error) => {});
   }
-  await console.log(linkslist);
-  await console.log(linkslist.length);
-  return linkslist;
+  // await console.log(linkslist);
+  // await console.log(linkslist.length);
+
+  // linkslist.map(async (plink) => {
+  //   await getDetails(plink);
+  // });
 };
 
 module.exports = products;
