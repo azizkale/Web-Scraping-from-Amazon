@@ -22,18 +22,6 @@ products.route("/").get(async (req, res, next) => {
       listProductPages.push(url); // first page
 
       await getAllProductPages(listProductPages, $);
-
-      // // gets product details
-      // for (let i = 0; i < linkList.length; i++) {
-      //   await getDetails(linkList[i]);
-      // }
-      // await console.log("telafi başlıyor");
-
-      // // gets product details
-      // for (let i = 0; i < errorLinkList.length; i++) {
-      //   await getDetails(errorLinkList[i]);
-      // }
-      // console.log(listProduct);
     })
     .catch((error) => {
       // console.error(error);
@@ -96,9 +84,10 @@ async function getDetails(link) {
       // console.log(linkList.length);
       return oneProduct;
     })
-    .catch((error) => {
+    .catch(async (error) => {
       // gets the links that can not be responded
       // errorLinkList.push(link);
+      getDetails(link);
       // console.error(error);
     });
 }
@@ -168,9 +157,9 @@ const getAllDetailPageLinksOfProducts = async (pageslist, linkslist) => {
   // await console.log(linkslist);
   // await console.log(linkslist.length);
 
-  // linkslist.map(async (plink) => {
-  //   await getDetails(plink);
-  // });
+  await linkslist.map(async (plink) => {
+    await getDetails(plink);
+  });
 };
 
 module.exports = products;
