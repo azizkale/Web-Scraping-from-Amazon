@@ -37,59 +37,61 @@ products.route("/").get(async (req, res, next) => {
 //functions=========
 
 // 1-) gets the details of products
-async function getDetails(link) {
+async function getDetails(link, prod) {
   let oneProduct = new Product();
+  prod = undefined;
+  while (prod == undefined) {
+    prod = await axios
+      .get(link)
+      .then(async (response2) => {
+        const $ = await cheerio.load(response2.data);
 
-  await axios
-    .get(link)
-    .then(async (response2) => {
-      const $ = await cheerio.load(response2.data);
+        oneProduct.pLink = link;
+        oneProduct.pTitle = $("#productTitle").text().trim();
+        oneProduct.pPrice = $("#priceblock_ourprice").text();
+        oneProduct.pAvailability = $("#availability > span").text().trim();
+        oneProduct.pCompanyName = $("a#bylineInfo").text();
 
-      oneProduct.pLink = link;
-      oneProduct.pTitle = $("#productTitle").text().trim();
-      oneProduct.pPrice = $("#priceblock_ourprice").text();
-      oneProduct.pAvailability = $("#availability > span").text().trim();
-      oneProduct.pCompanyName = $("a#bylineInfo").text();
+        let arr = [];
+        $("#twister")
+          .find($("#variation_color_name > ul > li"))
+          .map(function (i, el) {
+            // this === el
+            return arr.push($(this).find($("img")).attr("alt"));
+          });
+        arr.push(
+          $("#variation_color_name").find($("span.selection")).text().trim()
+        );
+        oneProduct.pColor = arr;
 
-      let arr = [];
-      $("#twister")
-        .find($("#variation_color_name > ul > li"))
-        .map(function (i, el) {
-          // this === el
-          return arr.push($(this).find($("img")).attr("alt"));
+        oneProduct.pSize = $("#twister > #variation_size_name")
+          .find($("span.selection"))
+          .text()
+          .trim();
+
+        console.log(oneProduct);
+        listProduct.push({
+          pLink: oneProduct.pLink,
+          pTitle: oneProduct.pTitle,
+          pPrice: oneProduct.pPrice,
+          pAvailability: oneProduct.pAvailability,
+          pCompanyName: oneProduct.pCompanyName,
+          pColor: oneProduct.pColor,
+          pSize: "3 Yaş",
         });
-      arr.push(
-        $("#variation_color_name").find($("span.selection")).text().trim()
-      );
-      oneProduct.pColor = arr;
+        console.log("error links sayısı: " + errorLinkList.length);
+        console.log("ürünler: " + listProduct.length);
 
-      oneProduct.pSize = $("#twister > #variation_size_name")
-        .find($("span.selection"))
-        .text()
-        .trim();
+        // console.log(linkList.length);
+        return oneProduct;
+      })
+      .catch(async (error) => {
+        // gets the links that can not be responded
+        errorLinkList.push(link);
 
-      console.log(oneProduct);
-      listProduct.push({
-        pLink: oneProduct.pLink,
-        pTitle: oneProduct.pTitle,
-        pPrice: oneProduct.pPrice,
-        pAvailability: oneProduct.pAvailability,
-        pCompanyName: oneProduct.pCompanyName,
-        pColor: oneProduct.pColor,
-        pSize: "3 Yaş",
+        // console.error(error);
       });
-      console.log("error links sayısı: " + errorLinkList.length);
-      console.log("ürünler: " + listProduct.length);
-
-      // console.log(linkList.length);
-      return oneProduct;
-    })
-    .catch(async (error) => {
-      // gets the links that can not be responded
-      // errorLinkList.push(link);
-      getDetails(link);
-      // console.error(error);
-    });
+  }
 }
 
 // gets all products-details pages links
