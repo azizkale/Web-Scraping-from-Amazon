@@ -11,7 +11,7 @@ let listProduct = [];
 
 products.route("/").get(async (req, res, next) => {
   let url =
-    "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622291669&rnid=13547133031&ref=sr_pg_1";
+    "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622296624&rnid=13547133031&ref=sr_pg_1";
 
   //gets products list pages
   await axios
@@ -37,48 +37,61 @@ products.route("/").get(async (req, res, next) => {
 async function getDetails(link) {
   let oneProduct = new Product();
 
-  await axios.get(link).then(async (response2) => {
-    const $ = await cheerio.load(response2.data);
+  await axios
+    .get(link)
+    .then(async (response2) => {
+      const $ = await cheerio.load(response2.data);
 
-    oneProduct.pLink = link;
-    oneProduct.pTitle = $("#productTitle").text().trim();
-    oneProduct.pPrice = $("#priceblock_ourprice").text();
-    oneProduct.pAvailability = $("#availability > span").text().trim();
-    oneProduct.pCompanyName = $("a#bylineInfo").text();
+      oneProduct.pLink = link;
+      oneProduct.pTitle = $("#productTitle").text().trim();
+      oneProduct.pPrice = $("#priceblock_ourprice").text();
+      oneProduct.pAvailability = $("#availability > span").text().trim();
+      oneProduct.pCompanyName = $("a#bylineInfo").text();
 
-    let arr = [];
-    $("#twister")
-      .find($("#variation_color_name > ul > li"))
-      .map(function (i, el) {
-        // this === el
-        return arr.push($(this).find($("img")).attr("alt"));
+      let arr = [];
+      $("#twister")
+        .find($("#variation_color_name > ul > li"))
+        .map(function (i, el) {
+          // this === el
+          return arr.push($(this).find($("img")).attr("alt"));
+        });
+      arr.push(
+        $("#variation_color_name").find($("span.selection")).text().trim()
+      );
+      oneProduct.pColor = arr;
+
+      oneProduct.pSize = $("#twister > #variation_size_name")
+        .find($("span.selection"))
+        .text()
+        .trim();
+
+      console.log(oneProduct);
+      listProduct.push({
+        pLink: oneProduct.pLink,
+        pTitle: oneProduct.pTitle,
+        pPrice: oneProduct.pPrice,
+        pAvailability: oneProduct.pAvailability,
+        pCompanyName: oneProduct.pCompanyName,
+        pColor: oneProduct.pColor,
+        pSize: "3 Yaş",
       });
-    arr.push(
-      $("#variation_color_name").find($("span.selection")).text().trim()
-    );
-    oneProduct.pColor = arr;
+      console.log("error links sayısı: " + errorLinkList.length);
+      console.log("ürünler: " + listProduct.length);
 
-    oneProduct.pSize = $("#twister > #variation_size_name")
-      .find($("span.selection"))
-      .text()
-      .trim();
-
-    console.log(oneProduct);
-    listProduct.push({
-      pLink: oneProduct.pLink,
-      pTitle: oneProduct.pTitle,
-      pPrice: oneProduct.pPrice,
-      pAvailability: oneProduct.pAvailability,
-      pCompanyName: oneProduct.pCompanyName,
-      pColor: oneProduct.pColor,
-      pSize: "3 Yaş",
+      // console.log(linkList.length);
+      return oneProduct;
+    })
+    .catch(async () => {
+      await getDetails(link).catch(async () => {
+        await getDetails(link).catch(async () => {
+          await getDetails(link).catch(async () => {
+            await getDetails(link).catch(async () => {
+              errorLinkList.push(link);
+            });
+          });
+        });
+      });
     });
-    console.log("error links sayısı: " + errorLinkList.length);
-    console.log("ürünler: " + listProduct.length);
-
-    // console.log(linkList.length);
-    return oneProduct;
-  });
 }
 
 // gets all products-details pages links
@@ -149,36 +162,7 @@ const getAllDetailPageLinksOfProducts = async (pageslist) => {
   await linkslist.map(async (plink) => {
     try {
       await getDetails(plink);
-    } catch (error) {
-      try {
-        await getDetails(plink);
-      } catch (error) {
-        try {
-          await getDetails(plink);
-        } catch (error) {
-          try {
-            await getDetails(plink);
-          } catch (error) {
-            try {
-              await sleep(1000);
-              await getDetails(plink);
-            } catch (error) {
-              try {
-                await sleep(2000);
-                await getDetails(plink);
-              } catch (error) {
-                try {
-                  await sleep(3000);
-                  await getDetails(plink);
-                } catch (error) {
-                  errorLinkList.push(plink);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    } catch (error) {}
   });
 
   // for (let i = 0; i < linkslist.length; i++) {
