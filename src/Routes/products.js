@@ -11,7 +11,7 @@ let listProduct = [];
 
 products.route("/").get(async (req, res, next) => {
   let url =
-    "https://www.amazon.com.tr/s?i=fashion&bbn=13546861031&rh=n%3A12466553031%2Cn%3A13546649031%2Cn%3A13546677031%2Cn%3A13546861031%2Cn%3A13547375031&dc&fs=true&qid=1622128867&rnid=13546861031&ref=sr_nr_n_4";
+    "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622291669&rnid=13547133031&ref=sr_pg_1";
 
   //gets products list pages
   await axios
@@ -146,13 +146,72 @@ const getAllDetailPageLinksOfProducts = async (pageslist) => {
   // await console.log(linkslist);
   // await console.log(linkslist.length);
 
-  for (let i = 0; i < linkslist.length; i++) {
+  await linkslist.map(async (plink) => {
     try {
-      await getDetails(linkslist[i]);
+      await getDetails(plink);
     } catch (error) {
-      errorLinkList.push(linkslist[i]);
+      try {
+        await getDetails(plink);
+      } catch (error) {
+        try {
+          await getDetails(plink);
+        } catch (error) {
+          try {
+            await getDetails(plink);
+          } catch (error) {
+            try {
+              await sleep(1000);
+              await getDetails(plink);
+            } catch (error) {
+              try {
+                await sleep(2000);
+                await getDetails(plink);
+              } catch (error) {
+                try {
+                  await sleep(3000);
+                  await getDetails(plink);
+                } catch (error) {
+                  errorLinkList.push(plink);
+                }
+              }
+            }
+          }
+        }
+      }
     }
-  }
+  });
+
+  // for (let i = 0; i < linkslist.length; i++) {
+  //   try {
+  //     await getDetails(linkslist[i]);
+  //   } catch (error) {
+  //     errorLinkList.push(linkslist[i]);
+  //   }
+  // }
+
+  // for (let i = 0; i < errorLinkList.length; i++) {
+  //   try {
+  //     await getDetails(errorLinkList[i]);
+  //     await errorLinkList.splice(i, 1);
+  //   } catch (error) {
+  //     try {
+  //       await getDetails(errorLinkList[i]);
+  //       await errorLinkList.splice(i, 1);
+  //     } catch (error) {
+  //       try {
+  //         await getDetails(errorLinkList[i]);
+  //         await errorLinkList.splice(i, 1);
+  //       } catch (error) {
+  //         try {
+  //           await getDetails(errorLinkList[i]);
+  //           await errorLinkList.splice(i, 1);
+  //         } catch (error) {
+  //           console.log("zort");
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 };
 
 // sleep function
