@@ -162,4 +162,9 @@ const getAllDetailPageLinksOfProducts = async (pageslist, linkslist) => {
   });
 };
 
+// sleep function
+const sleep = async (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 module.exports = products;
