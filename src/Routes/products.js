@@ -37,61 +37,47 @@ products.route("/").get(async (req, res, next) => {
 async function getDetails(link) {
   let oneProduct = new Product();
 
-  await axios
-    .get(link)
-    .then(async (response2) => {
-      const $ = await cheerio.load(response2.data);
+  await axios.get(link).then(async (response2) => {
+    const $ = await cheerio.load(response2.data);
 
-      oneProduct.pLink = link;
-      oneProduct.pTitle = $("#productTitle").text().trim();
-      oneProduct.pPrice = $("#priceblock_ourprice").text();
-      oneProduct.pAvailability = $("#availability > span").text().trim();
-      oneProduct.pCompanyName = $("a#bylineInfo").text();
+    oneProduct.pLink = link;
+    oneProduct.pTitle = $("#productTitle").text().trim();
+    oneProduct.pPrice = $("#priceblock_ourprice").text();
+    oneProduct.pAvailability = $("#availability > span").text().trim();
+    oneProduct.pCompanyName = $("a#bylineInfo").text();
 
-      let arr = [];
-      $("#twister")
-        .find($("#variation_color_name > ul > li"))
-        .map(function (i, el) {
-          // this === el
-          return arr.push($(this).find($("img")).attr("alt"));
-        });
-      arr.push(
-        $("#variation_color_name").find($("span.selection")).text().trim()
-      );
-      oneProduct.pColor = arr;
-
-      oneProduct.pSize = $("#twister > #variation_size_name")
-        .find($("span.selection"))
-        .text()
-        .trim();
-
-      console.log(oneProduct);
-      listProduct.push({
-        pLink: oneProduct.pLink,
-        pTitle: oneProduct.pTitle,
-        pPrice: oneProduct.pPrice,
-        pAvailability: oneProduct.pAvailability,
-        pCompanyName: oneProduct.pCompanyName,
-        pColor: oneProduct.pColor,
-        pSize: "3 Yaş",
+    let arr = [];
+    $("#twister")
+      .find($("#variation_color_name > ul > li"))
+      .map(function (i, el) {
+        // this === el
+        return arr.push($(this).find($("img")).attr("alt"));
       });
-      console.log("error links sayısı: " + errorLinkList.length);
-      console.log("ürünler: " + listProduct.length);
+    arr.push(
+      $("#variation_color_name").find($("span.selection")).text().trim()
+    );
+    oneProduct.pColor = arr;
 
-      // console.log(linkList.length);
-      return oneProduct;
-    })
-    .catch(async () => {
-      await getDetails(link).catch(async () => {
-        await getDetails(link).catch(async () => {
-          await getDetails(link).catch(async () => {
-            await getDetails(link).catch(async () => {
-              errorLinkList.push(link);
-            });
-          });
-        });
-      });
+    oneProduct.pSize = $("#twister > #variation_size_name")
+      .find($("span.selection"))
+      .text()
+      .trim();
+
+    listProduct.push({
+      pLink: oneProduct.pLink,
+      pTitle: oneProduct.pTitle,
+      pPrice: oneProduct.pPrice,
+      pAvailability: oneProduct.pAvailability,
+      pCompanyName: oneProduct.pCompanyName,
+      pColor: oneProduct.pColor,
+      pSize: "3 Yaş",
     });
+    console.log("error links sayısı: " + errorLinkList.length);
+    console.log("ürünler: " + listProduct.length);
+
+    // console.log(linkList.length);
+  });
+  return oneProduct;
 }
 
 // gets all products-details pages links
@@ -159,10 +145,26 @@ const getAllDetailPageLinksOfProducts = async (pageslist) => {
   // await console.log(linkslist);
   // await console.log(linkslist.length);
 
-  await linkslist.map(async (plink) => {
+  await linkslist.map((plink) => {
     try {
-      await getDetails(plink);
-    } catch (error) {}
+      let product = getDetails(plink)
+        .then()
+        .catch((error) => {
+          console.log(error.response.status);
+        });
+      product.then(async (result) => {
+        console.log(result);
+      });
+    } catch (error) {
+      try {
+        let product = getDetails(plink);
+        product.then(async (result) => {
+          console.log(result);
+        });
+      } catch (error) {
+        console.log("zort");
+      }
+    }
   });
 
   // for (let i = 0; i < linkslist.length; i++) {
