@@ -145,7 +145,7 @@ const getAllDetailPageLinksOfProducts = async (pageslist) => {
   // await console.log(linkslist);
   // await console.log(linkslist.length);
 
-  await linkslist.map((plink) => {
+  await linkslist.forEach((plink) => {
     try {
       getDetails(plink)
         .then(async (result) => {
@@ -182,7 +182,25 @@ const getAllDetailPageLinksOfProducts = async (pageslist) => {
                                   console.log(result);
                                 })
                                 .catch((error) => {
-                                  errorLinkList.push(plink);
+                                  getDetails(plink)
+                                    .then(async (result) => {
+                                      console.log(result);
+                                    })
+                                    .catch((error) => {
+                                      getDetails(plink)
+                                        .then(async (result) => {
+                                          console.log(result);
+                                        })
+                                        .catch((error) => {
+                                          getDetails(plink)
+                                            .then(async (result) => {
+                                              console.log(result);
+                                            })
+                                            .catch((error) => {
+                                              errorLinkList.push(plink);
+                                            });
+                                        });
+                                    });
                                 });
                             });
                         });
