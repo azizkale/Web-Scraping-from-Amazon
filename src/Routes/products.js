@@ -147,57 +147,51 @@ const getAllDetailPageLinksOfProducts = async (pageslist) => {
 
   await linkslist.map((plink) => {
     try {
-      let product = getDetails(plink)
-        .then()
-        .catch((error) => {
-          console.log(error.response.status);
-        });
-      product.then(async (result) => {
-        console.log(result);
-      });
-    } catch (error) {
-      try {
-        let product = getDetails(plink);
-        product.then(async (result) => {
+      getDetails(plink)
+        .then(async (result) => {
           console.log(result);
+        })
+        .catch((error) => {
+          getDetails(plink)
+            .then(async (result) => {
+              console.log(result);
+            })
+            .catch((error) => {
+              getDetails(plink)
+                .then(async (result) => {
+                  console.log(result);
+                })
+                .catch((error) => {
+                  getDetails(plink)
+                    .then(async (result) => {
+                      console.log(result);
+                    })
+                    .catch((error) => {
+                      getDetails(plink)
+                        .then(async (result) => {
+                          console.log(result);
+                        })
+                        .catch((error) => {
+                          getDetails(plink)
+                            .then(async (result) => {
+                              console.log(result);
+                            })
+                            .catch((error) => {
+                              getDetails(plink)
+                                .then(async (result) => {
+                                  console.log(result);
+                                })
+                                .catch((error) => {
+                                  errorLinkList.push(plink);
+                                });
+                            });
+                        });
+                    });
+                });
+            });
         });
-      } catch (error) {
-        console.log("zort");
-      }
-    }
+    } catch (error) {}
   });
-
-  // for (let i = 0; i < linkslist.length; i++) {
-  //   try {
-  //     await getDetails(linkslist[i]);
-  //   } catch (error) {
-  //     errorLinkList.push(linkslist[i]);
-  //   }
-  // }
-
-  // for (let i = 0; i < errorLinkList.length; i++) {
-  //   try {
-  //     await getDetails(errorLinkList[i]);
-  //     await errorLinkList.splice(i, 1);
-  //   } catch (error) {
-  //     try {
-  //       await getDetails(errorLinkList[i]);
-  //       await errorLinkList.splice(i, 1);
-  //     } catch (error) {
-  //       try {
-  //         await getDetails(errorLinkList[i]);
-  //         await errorLinkList.splice(i, 1);
-  //       } catch (error) {
-  //         try {
-  //           await getDetails(errorLinkList[i]);
-  //           await errorLinkList.splice(i, 1);
-  //         } catch (error) {
-  //           console.log("zort");
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
 };
 
 // sleep function
