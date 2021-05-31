@@ -28,56 +28,74 @@ products.route("/").get(async (req, res, next) => {
     });
 
   // gets all detail pages of products
-  await getAllDetailPageLinksOfProducts(listProductPages);
+  await getAllDetailPageLinksOfProducts(listProductPages).then(
+    async (result) => {
+      await getDetails(result, listProduct, errorLinkList).then(
+        async (result2) => {
+          await console.log("productlist");
+          await console.log(result2.prolist);
+        }
+      );
+    }
+  );
 });
 
 //functions=========
 
 // 1-) gets the details of products
-async function getDetails(link) {
+async function getDetails(linklist, listproduct, errorlinklist) {
   let oneProduct = new Product();
 
-  await axios.get(link).then(async (response2) => {
-    const $ = await cheerio.load(response2.data);
+  for (let i = 0; i < linklist.length; i++) {
+    await axios
+      .get(linklist[i])
+      .then(async (response2) => {
+        const $ = await cheerio.load(response2.data);
 
-    oneProduct.pLink = link;
-    oneProduct.pTitle = $("#productTitle").text().trim();
-    oneProduct.pPrice = $("#priceblock_ourprice").text();
-    oneProduct.pAvailability = $("#availability > span").text().trim();
-    oneProduct.pCompanyName = $("a#bylineInfo").text();
+        oneProduct.pLink = linklist[i];
+        oneProduct.pTitle = $("#productTitle").text().trim();
+        oneProduct.pPrice = $("#priceblock_ourprice").text();
+        oneProduct.pAvailability = $("#availability > span").text().trim();
+        oneProduct.pCompanyName = $("a#bylineInfo").text();
 
-    let arr = [];
-    $("#twister")
-      .find($("#variation_color_name > ul > li"))
-      .map(function (i, el) {
-        // this === el
-        return arr.push($(this).find($("img")).attr("alt"));
+        let arr = [];
+        $("#twister")
+          .find($("#variation_color_name > ul > li"))
+          .map(function (i, el) {
+            // this === el
+            return arr.push($(this).find($("img")).attr("alt"));
+          });
+        arr.push(
+          $("#variation_color_name").find($("span.selection")).text().trim()
+        );
+        oneProduct.pColor = arr;
+
+        oneProduct.pSize = $("#twister > #variation_size_name")
+          .find($("span.selection"))
+          .text()
+          .trim();
+
+        listproduct.push({
+          pLink: oneProduct.pLink,
+          pTitle: oneProduct.pTitle,
+          pPrice: oneProduct.pPrice,
+          pAvailability: oneProduct.pAvailability,
+          pCompanyName: oneProduct.pCompanyName,
+          pColor: oneProduct.pColor,
+          pSize: "3 Yaş",
+        });
+        console.log("error links sayısı: " + errorlinklist.length);
+        console.log("ürünler: " + listproduct.length);
+      })
+      .catch(() => {
+        errorlinklist.push(linklist[i]);
       });
-    arr.push(
-      $("#variation_color_name").find($("span.selection")).text().trim()
-    );
-    oneProduct.pColor = arr;
+  }
 
-    oneProduct.pSize = $("#twister > #variation_size_name")
-      .find($("span.selection"))
-      .text()
-      .trim();
-
-    listProduct.push({
-      pLink: oneProduct.pLink,
-      pTitle: oneProduct.pTitle,
-      pPrice: oneProduct.pPrice,
-      pAvailability: oneProduct.pAvailability,
-      pCompanyName: oneProduct.pCompanyName,
-      pColor: oneProduct.pColor,
-      pSize: "3 Yaş",
-    });
-    console.log("error links sayısı: " + errorLinkList.length);
-    console.log("ürünler: " + listProduct.length);
-
-    // console.log(linkList.length);
-  });
-  return oneProduct;
+  return {
+    prolist: listproduct,
+    errlist: errorlinklist,
+  };
 }
 
 // gets all products-details pages links
@@ -138,78 +156,10 @@ const getAllDetailPageLinksOfProducts = async (pageslist) => {
             "https://www.amazon.com.tr" + $(prd).attr("href")
           );
         });
-        return linkslist;
       })
       .catch((error) => {});
   }
-  // await console.log(linkslist);
-  // await console.log(linkslist.length);
-
-  await linkslist.forEach((plink) => {
-    try {
-      getDetails(plink)
-        .then(async (result) => {
-          console.log(result);
-        })
-        .catch((error) => {
-          getDetails(plink)
-            .then(async (result) => {
-              console.log(result);
-            })
-            .catch((error) => {
-              getDetails(plink)
-                .then(async (result) => {
-                  console.log(result);
-                })
-                .catch((error) => {
-                  getDetails(plink)
-                    .then(async (result) => {
-                      console.log(result);
-                    })
-                    .catch((error) => {
-                      getDetails(plink)
-                        .then(async (result) => {
-                          console.log(result);
-                        })
-                        .catch((error) => {
-                          getDetails(plink)
-                            .then(async (result) => {
-                              console.log(result);
-                            })
-                            .catch((error) => {
-                              getDetails(plink)
-                                .then(async (result) => {
-                                  console.log(result);
-                                })
-                                .catch((error) => {
-                                  getDetails(plink)
-                                    .then(async (result) => {
-                                      console.log(result);
-                                    })
-                                    .catch((error) => {
-                                      getDetails(plink)
-                                        .then(async (result) => {
-                                          console.log(result);
-                                        })
-                                        .catch((error) => {
-                                          getDetails(plink)
-                                            .then(async (result) => {
-                                              console.log(result);
-                                            })
-                                            .catch((error) => {
-                                              errorLinkList.push(plink);
-                                            });
-                                        });
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    } catch (error) {}
-  });
+  return linkslist;
 };
 
 // sleep function
