@@ -30,10 +30,13 @@ products.route("/").get(async (req, res, next) => {
   // gets all detail pages of products
   await getAllDetailPageLinksOfProducts(listProductPages).then(
     async (result) => {
+      // result = link Count
+      // get product details
       await getDetails(result, listProduct, errorLinkList).then(
         async (result2) => {
-          await console.log("productlist");
-          await console.log(result2.prolist);
+          await console.log(errorLinkList);
+          await console.log("pro:" + listProduct.length);
+          await console.log("linkCount:" + result.length);
         }
       );
     }
@@ -43,9 +46,8 @@ products.route("/").get(async (req, res, next) => {
 //functions=========
 
 // 1-) gets the details of products
-async function getDetails(linklist, listproduct, errorlinklist) {
+const getDetails = async (linklist, listproduct, errorlinklist) => {
   let oneProduct = new Product();
-
   for (let i = 0; i < linklist.length; i++) {
     await axios
       .get(linklist[i])
@@ -87,8 +89,11 @@ async function getDetails(linklist, listproduct, errorlinklist) {
         console.log("error links sayısı: " + errorlinklist.length);
         console.log("ürünler: " + listproduct.length);
       })
-      .catch(() => {
-        errorlinklist.push(linklist[i]);
+      .catch((error) => {
+        errorlinklist.push({
+          link: linklist[i],
+          errorstatus: error.response.status,
+        });
       });
   }
 
@@ -96,7 +101,7 @@ async function getDetails(linklist, listproduct, errorlinklist) {
     prolist: listproduct,
     errlist: errorlinklist,
   };
-}
+};
 
 // gets all products-details pages links
 const getAllProductPages = async (listpages, $) => {
