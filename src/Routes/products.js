@@ -30,16 +30,14 @@ products.route("/").get(async (req, res, next) => {
   // gets all detail pages of products
   await getAllDetailPageLinksOfProducts(listProductPages).then(
     async (result) => {
-      // result = link Count
+      // result = link list
       // get product details
       await getDetails(result, listProduct, errorLinkList).then(
         async (result2) => {
           if (result2.errlist.length > 0) {
             try {
               await getDetails2(result2.errlist, listProduct);
-            } catch (error) {
-              console.log("503 dışı bir hata");
-            }
+            } catch {}
           }
         }
       );
@@ -64,32 +62,24 @@ const getDetails = async (linklist, listproduct, errorlinklist) => {
         oneProduct.pAvailability = $("#availability > span").text().trim();
         oneProduct.pCompanyName = $("a#bylineInfo").text();
 
-        let arr = [];
+        let colorlist = [];
         $("#twister")
           .find($("#variation_color_name > ul > li"))
           .map(function (i, el) {
             // this === el
-            return arr.push($(this).find($("img")).attr("alt"));
+            return colorlist.push($(this).find($("img")).attr("alt"));
           });
-        arr.push(
+        colorlist.push(
           $("#variation_color_name").find($("span.selection")).text().trim()
         );
-        oneProduct.pColor = arr;
+        oneProduct.pColor = colorlist;
 
         oneProduct.pSize = $("#twister > #variation_size_name")
           .find($("span.selection"))
           .text()
           .trim();
 
-        listproduct.push({
-          pLink: oneProduct.pLink,
-          pTitle: oneProduct.pTitle,
-          pPrice: oneProduct.pPrice,
-          pAvailability: oneProduct.pAvailability,
-          pCompanyName: oneProduct.pCompanyName,
-          pColor: oneProduct.pColor,
-          pSize: "3 Yaş",
-        });
+        listproduct.push(oneProduct);
         console.log("error links sayısı: " + errorlinklist.length);
         console.log("ürünler: " + listproduct.length);
       })
@@ -126,37 +116,31 @@ const getDetails2 = async (errorlinklist, listproduct) => {
           oneProduct.pAvailability = $("#availability > span").text().trim();
           oneProduct.pCompanyName = $("a#bylineInfo").text();
 
-          let arr = [];
+          let colorlist = [];
           $("#twister")
             .find($("#variation_color_name > ul > li"))
             .map(function (i, el) {
               // this === el
-              return arr.push($(this).find($("img")).attr("alt"));
+              return colorlist.push($(this).find($("img")).attr("alt"));
             });
-          arr.push(
+          colorlist.push(
             $("#variation_color_name").find($("span.selection")).text().trim()
           );
-          oneProduct.pColor = arr;
+          oneProduct.pColor = colorlist;
 
           oneProduct.pSize = $("#twister > #variation_size_name")
             .find($("span.selection"))
             .text()
             .trim();
 
-          listproduct.push({
-            pLink: oneProduct.pLink,
-            pTitle: oneProduct.pTitle,
-            pPrice: oneProduct.pPrice,
-            pAvailability: oneProduct.pAvailability,
-            pCompanyName: oneProduct.pCompanyName,
-            pColor: oneProduct.pColor,
-            pSize: "3 Yaş",
-          });
+          listproduct.push(oneProduct);
           console.log("ürünler: " + listproduct.length);
 
           param1 = "";
         })
-        .catch(() => {});
+        .catch((error) => {
+          param1 = error.response.status;
+        });
     }
   }
   return oneProduct;
