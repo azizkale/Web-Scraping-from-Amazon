@@ -11,7 +11,7 @@ let listProduct = [];
 
 products.route("/").get(async (req, res, next) => {
   let url =
-    "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622296624&rnid=13547133031&ref=sr_pg_1";
+    "https://www.amazon.com.tr/s?i=fashion&bbn=13546759031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546759031%2Cn%3A13547926031&dc&fs=true&qid=1622691129&rnid=13546759031&ref=sr_nr_n_3";
 
   //gets products list pages
   await axios
@@ -74,12 +74,22 @@ const getDetails = async (linklist, listproduct, errorlinklist) => {
         );
         oneProduct.pColor = colorlist;
 
-        oneProduct.pSize = $("#twister > #variation_size_name")
-          .find($("span.selection"))
-          .text()
-          .trim();
+        oneProduct.pSize = [];
+        $("#twister > #variation_size_name")
+          .find($("select > option"))
+          .map((i, el) => {
+            return oneProduct.pSize.push($(el).text().trim());
+          });
+
+        oneProduct.pSize.push(
+          $("#twister > #variation_size_name")
+            .find($("span.selection"))
+            .text()
+            .trim()
+        );
 
         listproduct.push(oneProduct);
+        console.log(oneProduct);
         console.log("error links sayısı: " + errorlinklist.length);
         console.log("ürünler: " + listproduct.length);
       })
@@ -128,12 +138,21 @@ const getDetails2 = async (errorlinklist, listproduct) => {
           );
           oneProduct.pColor = colorlist;
 
-          oneProduct.pSize = $("#twister > #variation_size_name")
-            .find($("span.selection"))
-            .text()
-            .trim();
+          oneProduct.pSize = [];
+          $("#twister > #variation_size_name")
+            .find($("select > option"))
+            .map((i, el) => {
+              return oneProduct.pSize.push($(el).text().trim());
+            });
+          oneProduct.pSize.push(
+            $("#twister > #variation_size_name")
+              .find($("span.selection"))
+              .text()
+              .trim()
+          );
 
           listproduct.push(oneProduct);
+          console.log(oneProduct);
           console.log("ürünler: " + listproduct.length);
 
           param1 = "";
