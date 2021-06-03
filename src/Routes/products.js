@@ -11,7 +11,7 @@ let listProduct = [];
 
 products.route("/").get(async (req, res, next) => {
   let url =
-    "https://www.amazon.com.tr/s?i=fashion&bbn=13546759031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546759031%2Cn%3A13547926031&dc&fs=true&qid=1622691129&rnid=13546759031&ref=sr_nr_n_3";
+    "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622689334&rnid=13547133031&ref=sr_pg_2";
 
   //gets products list pages
   await axios
@@ -88,6 +88,11 @@ const getDetails = async (linklist, listproduct, errorlinklist) => {
             .trim()
         );
 
+        oneProduct.pDescription = [];
+        $("#feature-bullets > ul > li > span").map((i, el) => {
+          oneProduct.pDescription.push($(el).text().trim());
+        });
+
         listproduct.push(oneProduct);
         console.log(oneProduct);
         console.log("error links sayısı: " + errorlinklist.length);
@@ -126,17 +131,16 @@ const getDetails2 = async (errorlinklist, listproduct) => {
           oneProduct.pAvailability = $("#availability > span").text().trim();
           oneProduct.pCompanyName = $("a#bylineInfo").text();
 
-          let colorlist = [];
+          oneProduct.pColor = [];
           $("#twister")
             .find($("#variation_color_name > ul > li"))
             .map(function (i, el) {
               // this === el
-              return colorlist.push($(this).find($("img")).attr("alt"));
+              return oneProduct.pColor.push($(this).find($("img")).attr("alt"));
             });
-          colorlist.push(
+          oneProduct.pColor.push(
             $("#variation_color_name").find($("span.selection")).text().trim()
           );
-          oneProduct.pColor = colorlist;
 
           oneProduct.pSize = [];
           $("#twister > #variation_size_name")
@@ -150,6 +154,15 @@ const getDetails2 = async (errorlinklist, listproduct) => {
               .text()
               .trim()
           );
+
+          oneProduct.pDescription = [];
+          $("#feature-bullets > ul > li > span").map((i, el) => {
+            oneProduct.pDescription.push($(el).text().trim());
+          });
+
+          $("div#productDescription > p").map((i, el) => {
+            oneProduct.pDescription.push($(el).text().trim());
+          });
 
           listproduct.push(oneProduct);
           console.log(oneProduct);
@@ -171,11 +184,12 @@ const getAllProductPages = async (listpages, $) => {
   // gets total number of the products on category pages
   const liCountOnPaginationSection = $("ul.a-pagination > li").length;
 
-  let totalPageCount = $(
-    ".celwidget, .slot=MAIN, .template=PAGINATION, .widgetId=pagination-button"
-  )
-    .find($("ul > li")[liCountOnPaginationSection - 2])
-    .text();
+  let totalPageCount =
+    $(
+      ".celwidget, .slot=MAIN, .template=PAGINATION, .widgetId=pagination-button"
+    )
+      .find($("ul > li")[liCountOnPaginationSection - 2])
+      .text() || 1;
 
   console.log("sayfa sayısı: " + totalPageCount);
   // gets the next page link on first page (2.page)
