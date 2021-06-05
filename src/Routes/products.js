@@ -91,7 +91,7 @@ const getDetails = async (linklist, listproduct, errorlinklist) => {
 
         //=====================
 
-        const fetch = createApolloFetch({
+        const fetch = await createApolloFetch({
           uri: "http://localhost:4000/",
         });
 
@@ -104,9 +104,9 @@ const getDetails = async (linklist, listproduct, errorlinklist) => {
           variables: {
             url: linklist[i],
           },
-        }).then((res) => {
-          console.log(res.data.getProductDetails);
-          oneProduct.pDescription.push(res.data.getProductDetails);
+        }).then(async (res) => {
+          await console.log(res.data.getProductDetails);
+          await oneProduct.pDescription.push(res.data.getProductDetails);
         });
 
         //=====================
