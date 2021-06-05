@@ -3,6 +3,7 @@ const products = express.Router();
 const Product = require("../models/Product");
 const axios = require("axios");
 const cheerio = require("cheerio");
+const { createApolloFetch } = require("apollo-fetch");
 
 let listProductPages = []; // gets all pages links which have product details
 let listLinksofAllProducts = [];
@@ -34,11 +35,11 @@ products.route("/").get(async (req, res, next) => {
       // get product details
       await getDetails(result, listProduct, errorLinkList).then(
         async (result2) => {
-          if (result2.errlist.length > 0) {
-            try {
-              await getDetails2(result2.errlist, listProduct);
-            } catch {}
-          }
+          // if (result2.errlist.length > 0) {
+          //   try {
+          //     await getDetails2(result2.errlist, listProduct);
+          //   } catch {}
+          // }
         }
       );
     }
@@ -49,67 +50,77 @@ products.route("/").get(async (req, res, next) => {
 
 // 1-) gets the details of products
 const getDetails = async (linklist, listproduct, errorlinklist) => {
-  let oneProduct = new Product();
-  for (let i = 0; i < linklist.length; i++) {
-    await axios
-      .get(linklist[i])
-      .then(async (response2) => {
-        const $ = await cheerio.load(response2.data);
+  // let oneProduct = new Product();
+  // for (let i = 0; i < linklist.length; i++) {
+  //   await axios
+  //     .get(linklist[i])
+  //     .then(async (response2) => {
+  //       const $ = await cheerio.load(response2.data);
+  //       oneProduct.pLink = linklist[i];
+  //       oneProduct.pTitle = $("#productTitle").text().trim();
+  //       oneProduct.pPrice = $("#priceblock_ourprice").text();
+  //       oneProduct.pAvailability = $("#availability > span").text().trim();
+  //       oneProduct.pCompanyName = $("a#bylineInfo").text();
+  //       let colorlist = [];
+  //       $("#twister")
+  //         .find($("#variation_color_name > ul > li"))
+  //         .map(function (i, el) {
+  //           // this === el
+  //           return colorlist.push($(this).find($("img")).attr("alt"));
+  //         });
+  //       colorlist.push(
+  //         $("#variation_color_name").find($("span.selection")).text().trim()
+  //       );
+  //       oneProduct.pColor = colorlist;
+  //       oneProduct.pSize = [];
+  //       $("#twister > #variation_size_name")
+  //         .find($("select > option"))
+  //         .map((i, el) => {
+  //           return oneProduct.pSize.push($(el).text().trim());
+  //         });
+  //       oneProduct.pSize.push(
+  //         $("#twister > #variation_size_name")
+  //           .find($("span.selection"))
+  //           .text()
+  //           .trim()
+  //       );
+  //       oneProduct.pDescription = [];
+  //       $("#feature-bullets > ul > li > span").map((i, el) => {
+  //         oneProduct.pDescription.push($(el).text().trim());
+  //       });
+  //       listproduct.push(oneProduct);
+  //       console.log(oneProduct);
+  //       console.log("error links sayısı: " + errorlinklist.length);
+  //       console.log("ürünler: " + listproduct.length);
+  //     })
+  //     .catch((error) => {
+  //       errorlinklist.push({
+  //         link: linklist[i],
+  //         errorstatus: error.response.status,
+  //       });
+  //     });
+  // }
+  // return {
+  //   prolist: listproduct,
+  //   errlist: errorlinklist,
+  // };
 
-        oneProduct.pLink = linklist[i];
-        oneProduct.pTitle = $("#productTitle").text().trim();
-        oneProduct.pPrice = $("#priceblock_ourprice").text();
-        oneProduct.pAvailability = $("#availability > span").text().trim();
-        oneProduct.pCompanyName = $("a#bylineInfo").text();
+  const fetch = createApolloFetch({
+    uri: "http://localhost:4000/",
+  });
 
-        let colorlist = [];
-        $("#twister")
-          .find($("#variation_color_name > ul > li"))
-          .map(function (i, el) {
-            // this === el
-            return colorlist.push($(this).find($("img")).attr("alt"));
-          });
-        colorlist.push(
-          $("#variation_color_name").find($("span.selection")).text().trim()
-        );
-        oneProduct.pColor = colorlist;
-
-        oneProduct.pSize = [];
-        $("#twister > #variation_size_name")
-          .find($("select > option"))
-          .map((i, el) => {
-            return oneProduct.pSize.push($(el).text().trim());
-          });
-
-        oneProduct.pSize.push(
-          $("#twister > #variation_size_name")
-            .find($("span.selection"))
-            .text()
-            .trim()
-        );
-
-        oneProduct.pDescription = [];
-        $("#feature-bullets > ul > li > span").map((i, el) => {
-          oneProduct.pDescription.push($(el).text().trim());
-        });
-
-        listproduct.push(oneProduct);
-        console.log(oneProduct);
-        console.log("error links sayısı: " + errorlinklist.length);
-        console.log("ürünler: " + listproduct.length);
-      })
-      .catch((error) => {
-        errorlinklist.push({
-          link: linklist[i],
-          errorstatus: error.response.status,
-        });
-      });
-  }
-
-  return {
-    prolist: listproduct,
-    errlist: errorlinklist,
-  };
+  fetch({
+    query: `
+      query GetProductDetails($url: String) {
+        getProductDetails(url: $url)                 
+      }
+  `,
+    variables: {
+      url: "https://www.amazon.com.tr/Koton-Bebek-Tayt-Pembe-18-24/dp/B08KF4SB6G/ref=sr_1_1?dchild=1&qid=1622723333&rnid=13547133031&s=apparel&sr=1-1&th=1",
+    },
+  }).then((res) => {
+    console.log(res.data);
+  });
 };
 
 // 2-) gets the details of products by using errorlinkist from getDetails(first)
