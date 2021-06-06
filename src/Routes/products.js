@@ -50,44 +50,11 @@ products.route("/").get(async (req, res, next) => {
 
 // 1-) gets the details of products
 const getDetails = async (linklist, listproduct, errorlinklist) => {
-  let oneProduct = new Product();
   for (let i = 0; i < linklist.length; i++) {
     await axios
       .get(linklist[i])
       .then(async (response2) => {
         const $ = await cheerio.load(response2.data);
-        oneProduct.pLink = linklist[i];
-        oneProduct.pTitle = $("#productTitle").text().trim();
-        oneProduct.pPrice = $("#priceblock_ourprice").text();
-        oneProduct.pAvailability = $("#availability > span").text().trim();
-        oneProduct.pCompanyName = $("a#bylineInfo").text();
-        let colorlist = [];
-        $("#twister")
-          .find($("#variation_color_name > ul > li"))
-          .map(function (i, el) {
-            // this === el
-            return colorlist.push($(this).find($("img")).attr("alt"));
-          });
-        colorlist.push(
-          $("#variation_color_name").find($("span.selection")).text().trim()
-        );
-        oneProduct.pColor = colorlist;
-        oneProduct.pSize = [];
-        $("#twister > #variation_size_name")
-          .find($("select > option"))
-          .map((i, el) => {
-            return oneProduct.pSize.push($(el).text().trim());
-          });
-        oneProduct.pSize.push(
-          $("#twister > #variation_size_name")
-            .find($("span.selection"))
-            .text()
-            .trim()
-        );
-        oneProduct.pDescription = [];
-        $("#feature-bullets > ul > li > span").map((i, el) => {
-          oneProduct.pDescription.push($(el).text().trim());
-        });
 
         //=====================
 
@@ -98,21 +65,32 @@ const getDetails = async (linklist, listproduct, errorlinklist) => {
         fetch({
           query: `
                 query GetProductDetails($url: String) {
-                  getProductDetails(url: $url)                 
+                  getProductDetails(url: $url){
+                    link
+                    title
+                    price
+                    availability
+                    companyname
+                    color
+                    size
+                    description
+                    info {
+                      subInfoTitle
+                      subInfo
+                    }
+                  }                 
                 }
             `,
           variables: {
             url: linklist[i],
           },
         }).then(async (res) => {
-          await console.log(res.data.getProductDetails);
-          await oneProduct.pDescription.push(res.data.getProductDetails);
+          listproduct.push(res.data.getProductDetails);
+          console.log(res.data.getProductDetails);
         });
 
         //=====================
 
-        listproduct.push(oneProduct);
-        console.log(oneProduct);
         console.log("error links sayısı: " + errorlinklist.length);
         console.log("ürünler: " + listproduct.length);
       })
