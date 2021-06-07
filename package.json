@@ -12,6 +12,7 @@
   "dependencies": {
     "apollo-fetch": "^0.7.0",
     "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
     "cheerio": "^1.0.0-rc.9",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
@@ -20,9 +21,7 @@
     "fetch": "^1.1.0",
     "http": "0.0.1-security",
     "jwt-decode": "^3.1.2",
-    "mongoose": "^5.11.14",
     "morgan": "^1.10.0",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.6"
+    "request": "^2.88.2"
   }
 }

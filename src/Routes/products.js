@@ -1,16 +1,16 @@
 const express = require("express");
 const products = express.Router();
-const Product = require("../models/Product");
+// const Product = require("../models/Product");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const { createApolloFetch } = require("apollo-fetch");
-
-let listProductPages = []; // gets all pages links which have product details
-let listLinksofAllProducts = [];
-let errorLinkList = [];
-let listProduct = [];
+const request = require("request");
 
 products.route("/").get(async (req, res, next) => {
+  let listProductPages = []; // gets all pages links which have product details
+  let errorLinkList = [];
+  let listProduct = [];
+
   let url =
     "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622689334&rnid=13547133031&ref=sr_pg_2";
 
@@ -35,11 +35,14 @@ products.route("/").get(async (req, res, next) => {
       // get product details
       await getDetails(result, listProduct, errorLinkList).then(
         async (result2) => {
-          if (result2.errlist.length > 0) {
-            try {
-              await getDetails2(result2.errlist, listProduct);
-            } catch {}
-          }
+          request("", function (error, response, body) {
+            res.send(result2);
+          });
+          // if (result2.errlist.length > 0) {
+          //   try {
+          //     await getDetails2(result2.errlist, listProduct);
+          //   } catch {}
+          // }
         }
       );
     }
@@ -50,7 +53,7 @@ products.route("/").get(async (req, res, next) => {
 
 // 1-) gets the details of products
 const getDetails = async (linklist, listproduct, errorlinklist) => {
-  for (let i = 0; i < linklist.length; i++) {
+  for (let i = 0; i < 10; i++) {
     await axios
       .get(linklist[i])
       .then(async (response2) => {
