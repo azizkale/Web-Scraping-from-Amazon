@@ -78,6 +78,14 @@ const getDetails = async (linklist, listproduct, errorlinklist) => {
                       subInfoTitle
                       subInfo
                     }
+                    technicalDetails {
+                      subInfoTitle
+                      subInfo
+                    }
+                    additionalInfo {
+                      subInfoTitle
+                      subInfo
+                    }
                   }                 
                 }
             `,
