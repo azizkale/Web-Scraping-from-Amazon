@@ -4,7 +4,6 @@ const products = express.Router();
 const axios = require("axios");
 const cheerio = require("cheerio");
 const { createApolloFetch } = require("apollo-fetch");
-const request = require("request");
 
 products.route("/").get(async (req, res, next) => {
   let listProductPages = []; // gets all pages links which have product details
@@ -33,11 +32,9 @@ products.route("/").get(async (req, res, next) => {
     async (result) => {
       // result = link list
       // get product details
-      await getDetails(result, listProduct, errorLinkList).then(
+      await getDetails(res, result, listProduct, errorLinkList).then(
         async (result2) => {
-          request("", function (error, response, body) {
-            res.send(result2);
-          });
+          // res.send(result2);
           // if (result2.errlist.length > 0) {
           //   try {
           //     await getDetails2(result2.errlist, listProduct);
@@ -52,7 +49,7 @@ products.route("/").get(async (req, res, next) => {
 //functions=========
 
 // 1-) gets the details of products
-const getDetails = async (linklist, listproduct, errorlinklist) => {
+const getDetails = async (ress, linklist, listproduct, errorlinklist) => {
   for (let i = 0; i < 10; i++) {
     await axios
       .get(linklist[i])
@@ -96,6 +93,7 @@ const getDetails = async (linklist, listproduct, errorlinklist) => {
             url: linklist[i],
           },
         }).then(async (res) => {
+          ress.send(res.data.getProductDetails);
           listproduct.push(res.data.getProductDetails);
           console.log(res.data.getProductDetails);
         });
