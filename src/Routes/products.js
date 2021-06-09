@@ -25,12 +25,10 @@ products.route("/links").get(async (req, res, next) => {
       // console.error(error);
     });
 
-  // gets all detail pages of products
+  // gets all detail pages of products (product details)
   await getAllDetailPageLinksOfProducts(listProductPages).then(
     async (result) => {
       res.send(result);
-      // result = link list
-      // get product details
     }
   );
 });
