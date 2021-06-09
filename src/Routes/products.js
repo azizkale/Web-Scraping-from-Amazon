@@ -5,10 +5,8 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const { createApolloFetch } = require("apollo-fetch");
 
-products.route("/").get(async (req, res, next) => {
+products.route("/links").get(async (req, res, next) => {
   let listProductPages = []; // gets all pages links which have product details
-  let errorLinkList = [];
-  let listProduct = [];
 
   let url =
     "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622689334&rnid=13547133031&ref=sr_pg_2";
@@ -30,90 +28,103 @@ products.route("/").get(async (req, res, next) => {
   // gets all detail pages of products
   await getAllDetailPageLinksOfProducts(listProductPages).then(
     async (result) => {
+      res.send(result);
       // result = link list
       // get product details
-      await getDetails(res, result, listProduct, errorLinkList).then(
-        async (result2) => {
-          // res.send(result2);
-          // if (result2.errlist.length > 0) {
-          //   try {
-          //     await getDetails2(result2.errlist, listProduct);
-          //   } catch {}
-          // }
-        }
-      );
     }
   );
+});
+
+products.route("/product").get(async (req, res, next) => {
+  const fetch = await createApolloFetch({
+    uri: "http://localhost:4000/",
+  });
+
+  fetch({
+    query: `
+          query GetProductDetails($url: String) {
+            getProductDetails(url: $url){
+              link
+              title
+              price
+              availability
+              companyname
+              color
+              size
+              description
+              info {
+                subInfoTitle
+                subInfo
+              }
+              technicalDetails {
+                subInfoTitle
+                subInfo
+              }
+              additionalInfo {
+                subInfoTitle
+                subInfo
+              }
+            }                 
+          }
+      `,
+    variables: {
+      url: encodeURI(req.query.link),
+    },
+  })
+    .then(async (result) => {
+      console.log(result);
+      res.send(result.data.getProductDetails);
+      return result.data.getProductDetails;
+    })
+    .catch((error) => {
+      console.log("error");
+    });
 });
 
 //functions=========
 
 // 1-) gets the details of products
-const getDetails = async (ress, linklist, listproduct, errorlinklist) => {
-  for (let i = 0; i < 10; i++) {
-    await axios
-      .get(linklist[i])
-      .then(async (response2) => {
-        const $ = await cheerio.load(response2.data);
+const getDetails = async (plink) => {
+  const fetch = await createApolloFetch({
+    uri: "http://localhost:4000/",
+  });
 
-        //=====================
+  fetch({
+    query: `
+          query GetProductDetails($url: String) {
+            getProductDetails(url: $url){
+              link
+              title
+              price
+              availability
+              companyname
+              color
+              size
+              description
+              info {
+                subInfoTitle
+                subInfo
+              }
+              technicalDetails {
+                subInfoTitle
+                subInfo
+              }
+              additionalInfo {
+                subInfoTitle
+                subInfo
+              }
+            }                 
+          }
+      `,
+    variables: {
+      url: plink,
+    },
+  }).then(async (result) => {
+    return result.data.getProductDetails;
+  });
 
-        const fetch = await createApolloFetch({
-          uri: "http://localhost:4000/",
-        });
-
-        fetch({
-          query: `
-                query GetProductDetails($url: String) {
-                  getProductDetails(url: $url){
-                    link
-                    title
-                    price
-                    availability
-                    companyname
-                    color
-                    size
-                    description
-                    info {
-                      subInfoTitle
-                      subInfo
-                    }
-                    technicalDetails {
-                      subInfoTitle
-                      subInfo
-                    }
-                    additionalInfo {
-                      subInfoTitle
-                      subInfo
-                    }
-                  }                 
-                }
-            `,
-          variables: {
-            url: linklist[i],
-          },
-        }).then(async (res) => {
-          ress.send(res.data.getProductDetails);
-          listproduct.push(res.data.getProductDetails);
-          console.log(res.data.getProductDetails);
-        });
-
-        //=====================
-
-        console.log("error links sayısı: " + errorlinklist.length);
-        console.log("ürünler: " + listproduct.length);
-      })
-      .catch((error) => {
-        errorlinklist.push({
-          link: linklist[i],
-          errorstatus: error.response.status,
-        });
-      });
-  }
-  return {
-    prolist: listproduct,
-    errlist: errorlinklist,
-  };
+  // console.log("error links sayısı: " + errorlinklist.length);
+  // console.log("ürünler: " + listproduct.length);
 };
 
 // 2-) gets the details of products by using errorlinkist from getDetails(first)

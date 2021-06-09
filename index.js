@@ -13,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(morgan("dev"));
 
-app.use("/product", products);
+app.use("/", products);
 app.use("/excell", excell);
 
 app.listen(PORT, () => console.log(`server runs on port ${PORT}`));
