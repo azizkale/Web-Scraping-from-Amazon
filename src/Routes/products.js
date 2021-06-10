@@ -62,6 +62,10 @@ products.route("/product").get(async (req, res, next) => {
                 subInfoTitle
                 subInfo
               }
+              asin {
+                asinColor
+                asinSize
+              }
             }                 
           }
       `,
