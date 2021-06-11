@@ -28,7 +28,14 @@ products.route("/links").get(async (req, res, next) => {
   // gets all detail pages of products (product details)
   await getAllDetailPageLinksOfProducts(listProductPages).then(
     async (result) => {
-      res.send(result);
+      let productlinks = [];
+      productlinks = result;
+      console.log(productlinks);
+      for (let i = 0; i < productlinks.length; i++) {
+        await getProductsWithVariations(productlinks[i]).catch(() => {
+          console.log("error");
+        });
+      }
     }
   );
 });
@@ -85,117 +92,7 @@ products.route("/product").get(async (req, res, next) => {
 
 //functions=========
 
-// 1-) gets the details of products
-const getDetails = async (plink) => {
-  const fetch = await createApolloFetch({
-    uri: "http://localhost:4000/",
-  });
-
-  fetch({
-    query: `
-          query GetProductDetails($url: String) {
-            getProductDetails(url: $url){
-              link
-              title
-              price
-              availability
-              companyname
-              color
-              size
-              description
-              info {
-                subInfoTitle
-                subInfo
-              }
-              technicalDetails {
-                subInfoTitle
-                subInfo
-              }
-              additionalInfo {
-                subInfoTitle
-                subInfo
-              }
-            }                 
-          }
-      `,
-    variables: {
-      url: plink,
-    },
-  }).then(async (result) => {
-    return result.data.getProductDetails;
-  });
-
-  // console.log("error links sayısı: " + errorlinklist.length);
-  // console.log("ürünler: " + listproduct.length);
-};
-
-// 2-) gets the details of products by using errorlinkist from getDetails(first)
-const getDetails2 = async (errorlinklist, listproduct) => {
-  let oneProduct = new Product();
-  for (let i = 0; i < errorlinklist.length; i++) {
-    await console.log("telafi" + i);
-
-    let param1 = errorlinklist[i].errorstatus;
-    while (param1 === 503) {
-      await axios
-        .get(errorlinklist[i].link)
-        .then(async (response2) => {
-          const $ = await cheerio.load(response2.data);
-
-          oneProduct.pLink = errorlinklist[i].link;
-          oneProduct.pTitle = $("#productTitle").text().trim();
-          oneProduct.pPrice = $("#priceblock_ourprice").text();
-          oneProduct.pAvailability = $("#availability > span").text().trim();
-          oneProduct.pCompanyName = $("a#bylineInfo").text();
-
-          oneProduct.pColor = [];
-          $("#twister")
-            .find($("#variation_color_name > ul > li"))
-            .map(function (i, el) {
-              // this === el
-              return oneProduct.pColor.push($(this).find($("img")).attr("alt"));
-            });
-          oneProduct.pColor.push(
-            $("#variation_color_name").find($("span.selection")).text().trim()
-          );
-
-          oneProduct.pSize = [];
-          $("#twister > #variation_size_name")
-            .find($("select > option"))
-            .map((i, el) => {
-              return oneProduct.pSize.push($(el).text().trim());
-            });
-          oneProduct.pSize.push(
-            $("#twister > #variation_size_name")
-              .find($("span.selection"))
-              .text()
-              .trim()
-          );
-
-          oneProduct.pDescription = [];
-          $("#feature-bullets > ul > li > span").map((i, el) => {
-            oneProduct.pDescription.push($(el).text().trim());
-          });
-
-          $("div#productDescription > p").map((i, el) => {
-            oneProduct.pDescription.push($(el).text().trim());
-          });
-
-          listproduct.push(oneProduct);
-          console.log(oneProduct);
-          console.log("ürünler: " + listproduct.length);
-
-          param1 = "";
-        })
-        .catch((error) => {
-          param1 = error.response.status;
-        });
-    }
-  }
-  return oneProduct;
-};
-
-// gets all products-details pages links
+// gets all products-details pages links (from pagination pages)
 const getAllProductPages = async (listpages, $) => {
   //
   // gets total number of the products on category pages
@@ -258,6 +155,34 @@ const getAllDetailPageLinksOfProducts = async (pageslist) => {
       .catch((error) => {});
   }
   return linkslist;
+};
+
+const getProductsWithVariations = async (url) => {
+  const fetch = await createApolloFetch({
+    uri: "http://localhost:4000/",
+  });
+
+  fetch({
+    query: `
+          query GetLinksWithAsin($url: String) {
+            getLinksWithAsin(url: $url){
+              asinColor
+              asinSize
+              variationsLinksOfProduct
+            }                 
+          }
+      `,
+    variables: {
+      url: encodeURI(url),
+    },
+  })
+    .then(async (result) => {
+      console.log(result.data.getLinksWithAsin);
+      return result.data.getLinksWithAsin;
+    })
+    .catch((error) => {
+      console.log("error");
+    });
 };
 
 module.exports = products;
