@@ -1,12 +1,13 @@
 const express = require("express");
 const products = express.Router();
-// const Product = require("../models/Product");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const { createApolloFetch } = require("apollo-fetch");
+const { response } = require("express");
 
+let listProductPages = [];
 products.route("/links").get(async (req, res, next) => {
-  let listProductPages = []; // gets all pages links which have product details
+  // gets all pages links which have product details
 
   let url =
     "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622689334&rnid=13547133031&ref=sr_pg_2";
@@ -26,18 +27,41 @@ products.route("/links").get(async (req, res, next) => {
     });
 
   // gets all detail pages of products (product details)
+  let productlinks = [];
   await getAllDetailPageLinksOfProducts(listProductPages).then(
     async (result) => {
-      let productlinks = [];
       productlinks = result;
-      console.log(productlinks);
-      for (let i = 0; i < productlinks.length; i++) {
-        await getProductsWithVariations(productlinks[i]).catch(() => {
-          console.log("error");
-        });
-      }
+      res.send(productlinks);
     }
   );
+});
+
+products.route("/variationlinksofproduct").get(async (req, res, next) => {
+  const fetch = await createApolloFetch({
+    uri: "http://localhost:4000/",
+  });
+
+  fetch({
+    query: `
+          query GetLinksWithAsin($url: String) {
+            getLinksWithAsin(url: $url){
+              asinColor
+              asinSize
+              variationsLinksOfProduct
+            }                 
+          }
+      `,
+    variables: {
+      url: encodeURI(req.query.link),
+    },
+  })
+    .then(async (result) => {
+      res.send(result.data.getLinksWithAsin);
+      return result.data.getLinksWithAsin;
+    })
+    .catch((error) => {
+      console.log("variaton error");
+    });
 });
 
 products.route("/product").get(async (req, res, next) => {
@@ -81,7 +105,6 @@ products.route("/product").get(async (req, res, next) => {
     },
   })
     .then(async (result) => {
-      console.log(result);
       res.send(result.data.getProductDetails);
       return result.data.getProductDetails;
     })
@@ -177,11 +200,10 @@ const getProductsWithVariations = async (url) => {
     },
   })
     .then(async (result) => {
-      console.log(result.data.getLinksWithAsin);
       return result.data.getLinksWithAsin;
     })
     .catch((error) => {
-      console.log("error");
+      console.log("variaton error");
     });
 };
 
