@@ -3,7 +3,7 @@ const products = express.Router();
 const axios = require("axios");
 const cheerio = require("cheerio");
 const { createApolloFetch } = require("apollo-fetch");
-const { response } = require("express");
+// const { response } = require("express");
 
 let listProductPages = [];
 products.route("/links").get(async (req, res, next) => {
@@ -17,7 +17,7 @@ products.route("/links").get(async (req, res, next) => {
     .get(url)
     .then(async (response) => {
       const $ = cheerio.load(response.data);
-
+      listProductPages = [];
       listProductPages.push(url); // first page
 
       await getAllProductPages(listProductPages, $);
@@ -30,8 +30,7 @@ products.route("/links").get(async (req, res, next) => {
   let productlinks = [];
   await getAllDetailPageLinksOfProducts(listProductPages).then(
     async (result) => {
-      productlinks = result;
-      res.send(productlinks);
+      res.send(result);
     }
   );
 });
@@ -47,6 +46,7 @@ products.route("/variationlinksofproduct").get(async (req, res, next) => {
             getLinksWithAsin(url: $url){
               asinColor
               asinSize
+              productUrl
               variationsLinksOfProduct
             }                 
           }
