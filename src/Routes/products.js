@@ -3,7 +3,6 @@ const products = express.Router();
 const axios = require("axios");
 const cheerio = require("cheerio");
 const { createApolloFetch } = require("apollo-fetch");
-// const { response } = require("express");
 
 let listProductPages = [];
 products.route("/links").get(async (req, res, next) => {
@@ -27,7 +26,6 @@ products.route("/links").get(async (req, res, next) => {
     });
 
   // gets all detail pages of products (product details)
-  let productlinks = [];
   await getAllDetailPageLinksOfProducts(listProductPages).then(
     async (result) => {
       res.send(result);
@@ -114,7 +112,6 @@ products.route("/product").get(async (req, res, next) => {
 });
 
 //functions=========
-
 // gets all products-details pages links (from pagination pages)
 const getAllProductPages = async (listpages, $) => {
   //
@@ -178,33 +175,6 @@ const getAllDetailPageLinksOfProducts = async (pageslist) => {
       .catch((error) => {});
   }
   return linkslist;
-};
-
-const getProductsWithVariations = async (url) => {
-  const fetch = await createApolloFetch({
-    uri: "http://localhost:4000/",
-  });
-
-  fetch({
-    query: `
-          query GetLinksWithAsin($url: String) {
-            getLinksWithAsin(url: $url){
-              asinColor
-              asinSize
-              variationsLinksOfProduct
-            }                 
-          }
-      `,
-    variables: {
-      url: encodeURI(url),
-    },
-  })
-    .then(async (result) => {
-      return result.data.getLinksWithAsin;
-    })
-    .catch((error) => {
-      console.log("variaton error");
-    });
 };
 
 module.exports = products;
