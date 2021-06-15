@@ -8,8 +8,7 @@ let listProductPages = [];
 products.route("/links").get(async (req, res, next) => {
   // gets all pages links which have product details
 
-  let url =
-    "https://www.amazon.com.tr/s?i=fashion&bbn=13547133031&rh=n%3A12466553031%2Cn%3A13546647031%2Cn%3A13546667031%2Cn%3A13546760031%2Cn%3A13547133031%2Cn%3A13547931031&dc&fs=true&qid=1622689334&rnid=13547133031&ref=sr_pg_2";
+  let url = req.query["url"];
 
   //gets products list pages
   await axios
