@@ -8,7 +8,7 @@ let listProductPages = [];
 products.route("/links").get(async (req, res, next) => {
   // gets all pages links which have product details
 
-  let url = req.query["url"];
+  let url = req.query["firsturl"];
 
   //gets products list pages
   await axios
@@ -49,7 +49,7 @@ products.route("/variationlinksofproduct").get(async (req, res, next) => {
           }
       `,
     variables: {
-      url: encodeURI(req.query.link),
+      url: encodeURI(req.query["producturl"]),
     },
   })
     .then(async (result) => {
@@ -68,16 +68,17 @@ products.route("/product").get(async (req, res, next) => {
 
   fetch({
     query: `
-          query GetProductDetails($url: String) {
-            getProductDetails(url: $url){
+          query GetSingleProduct($url: String) {
+            getSingleProduct(url: $url){
+              asin
               link
               title
               price
               availability
               companyname
+              description
               color
               size
-              description
               info {
                 subInfoTitle
                 subInfo
@@ -90,20 +91,19 @@ products.route("/product").get(async (req, res, next) => {
                 subInfoTitle
                 subInfo
               }
-              asin {
-                asinColor
-                asinSize
-              }
+              seller
+              category
+              imagelink
             }                 
           }
       `,
     variables: {
-      url: encodeURI(req.query.link),
+      url: encodeURI(req.query["productlink"]),
     },
   })
     .then(async (result) => {
-      res.send(result.data.getProductDetails);
-      return result.data.getProductDetails;
+      res.send(result.data.getSingleProduct);
+      return result.data.getSingleProduct;
     })
     .catch((error) => {
       console.log("error");
